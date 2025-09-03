@@ -32,10 +32,9 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       REDIS_HOST: redis
       REDIS_HOST_PASSWORD: ${REDIS_PASSWORD}
-      OVERWRITEHOST: ${NEXTCLOUD_TRUSTED_DOMAIN}
-      OVERWRITEPROTOCOL: https
-      TRUSTED_PROXIES: 172.16.0.0/12
       TZ: ${TZ}
+      OVERWRITEPROTOCOL: http
+      OVERWRITECLIURL: http://localhost:8081
     volumes:
       - nextcloud_html:/var/www/html
       - nextcloud_data:/var/www/html/data
@@ -54,6 +53,8 @@ services:
       REDIS_HOST: redis
       REDIS_HOST_PASSWORD: ${REDIS_PASSWORD}
       TZ: ${TZ}
+      OVERWRITEPROTOCOL: http
+      OVERWRITECLIURL: http://localhost:8081
     volumes:
       - nextcloud_html:/var/www/html
       - nextcloud_data:/var/www/html/data
