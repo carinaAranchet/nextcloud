@@ -21,7 +21,7 @@ services:
     image: nextcloud:${NEXTCLOUD_TAG}
     restart: always
     ports:
-      - "8081:80"
+      - "8080:80"
     depends_on:
       - db
       - redis
@@ -33,8 +33,8 @@ services:
       REDIS_HOST: redis
       REDIS_HOST_PASSWORD: ${REDIS_PASSWORD}
       TZ: ${TZ}
-      OVERWRITEPROTOCOL: http
-      OVERWRITECLIURL: http://localhost:8081
+      OVERWRITEPROTOCOL: https
+      OVERWRITECLIURL: https://www.latercer.cloud
     volumes:
       - nextcloud_html:/var/www/html
       - nextcloud_data:/var/www/html/data
@@ -54,7 +54,7 @@ services:
       REDIS_HOST_PASSWORD: ${REDIS_PASSWORD}
       TZ: ${TZ}
       OVERWRITEPROTOCOL: http
-      OVERWRITECLIURL: http://localhost:8081
+      OVERWRITECLIURL: http://localhost:8080
     volumes:
       - nextcloud_html:/var/www/html
       - nextcloud_data:/var/www/html/data
