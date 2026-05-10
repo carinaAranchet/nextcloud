@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ReporteController;
+use App\Http\Controllers\LegajoController;
 use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
@@ -13,10 +14,25 @@ Route::middleware(['auth', ValidateOidcToken::class])->group(function () {
     Route::get('/reporte', [ReporteController::class, 'index'])->name('reporte.index');
     Route::get('/reporte/filters', [ReporteController::class, 'filters'])->name('reporte.filters');
     Route::get('/reporte/data', [ReporteController::class, 'data'])->name('reporte.data');
+
+    Route::get('/legajo', [LegajoController::class, 'index'])->name('legajo.index');
+    Route::get('/legajo/proveedores', [LegajoController::class, 'proveedores'])->name('legajo.proveedores');
+    Route::get('/legajo/generar-qr', [LegajoController::class, 'generarQr'])->name('legajo.generar-qr');
 });
 
 // Login OIDC (Nextcloud)
-Route::get('/auth/redirect', fn() => Socialite::driver('nextcloud')->stateless()->redirect())->name('login');
+Route::get('/auth/redirect', function () {
+    $allowed  = ['/reporte', '/legajo'];
+    $intended = request()->input('intended', '/reporte');
+    if (! in_array($intended, $allowed)) {
+        $intended = '/reporte';
+    }
+    // Codificamos el destino en el state (el OIDC spec lo devuelve intacto)
+    return Socialite::driver('nextcloud')
+        ->stateless()
+        ->with(['state' => base64_encode($intended)])
+        ->redirect();
+})->name('login');
 Route::get('/auth/callback', function () {
     $oidcUser = Socialite::driver('nextcloud')->stateless()->user();
 
@@ -28,7 +44,6 @@ Route::get('/auth/callback', function () {
             'password' => \Illuminate\Support\Facades\Hash::make(\Illuminate\Support\Str::random(32)),
         ]
     );
-    // Si el usuario ya existía, actualizamos solo el nombre
     if (!$user->wasRecentlyCreated) {
         $user->name = $oidcUser->getName() ?? $oidcUser->getNickname() ?? $user->name;
         $user->save();
@@ -39,7 +54,12 @@ Route::get('/auth/callback', function () {
         'oidc_token'            => $oidcUser->token,
         'oidc_token_expires_at' => now()->timestamp + ($oidcUser->expiresIn ?? 3600),
     ]);
-    return redirect()->intended('/reporte');
+
+    // Recuperar destino del state (whitelist para evitar open-redirect)
+    $allowed  = ['/reporte', '/legajo'];
+    $decoded  = base64_decode((string) request()->input('state', ''), strict: true);
+    $intended = ($decoded !== false && in_array($decoded, $allowed)) ? $decoded : '/reporte';
+    return redirect($intended);
 });
 
 // Logout local (opcional)

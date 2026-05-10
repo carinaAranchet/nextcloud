@@ -15,7 +15,10 @@ class ValidateOidcToken
         if (!$expiresAt || now()->timestamp >= $expiresAt) {
             Auth::logout();
             session()->forget(['oidc_token', 'oidc_token_expires_at']);
-            return redirect()->route('login');
+            $allowed  = ['reporte', 'legajo'];
+            $path     = '/' . $request->path();
+            $intended = in_array($request->path(), $allowed) ? $path : '/reporte';
+            return redirect()->route('login', ['intended' => $intended]);
         }
 
         return $next($request);

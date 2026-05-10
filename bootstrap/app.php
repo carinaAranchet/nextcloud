@@ -14,5 +14,13 @@ return Application::configure(basePath: dirname(__DIR__))
         //
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (
+            \Illuminate\Auth\AuthenticationException $e,
+            \Illuminate\Http\Request $request
+        ) {
+            $allowed  = ['reporte', 'legajo'];
+            $path     = '/' . $request->path();
+            $intended = in_array($request->path(), $allowed) ? $path : '/reporte';
+            return redirect()->route('login', ['intended' => $intended]);
+        });
     })->create();

@@ -43,4 +43,10 @@ return [
         'userinfo_url'  => env('OIDC_USERINFO_URL'),
     ],
 
+    'nextcloud' => [
+        'url'  => env('NC_URL',        'http://localhost:8081'),
+        'user' => env('NC_FILES_USER', 'admin'),
+        'pass' => env('NC_FILES_PASS', ''),
+    ],
+
 ];
